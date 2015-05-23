@@ -14,26 +14,16 @@
     limitations under the License.
 */
 
-import com.inixsoftware.aggregatelynx.connector.AggregateConnector;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Random;
 
-public class ConnectorTest
+public class Generator
 {
     public static void main(String[] args) throws IOException
     {
-        long t1 = System.nanoTime();
-        AggregateConnector connector = new AggregateConnector("localhost", 8556);
-        connector.connect();
-
-        connector.createAggregate("Test",
-                "state,age,income", "state", "NJ");
-
-        Random r = new Random();
-
         String[] states = new String[]
                 {
                         "AL", "AK", "AZ", "AR", "CA", "CO",
@@ -47,19 +37,22 @@ public class ConnectorTest
                         "WI", "WY"
                 };
 
-        String tmp;
-        BufferedReader br = new BufferedReader(new FileReader("data.txt"));
 
-        while((tmp = br.readLine()) != null)
-            connector.sendData("Test", tmp);
+        int BUF_SIZE = 1000;
+        Random r = new Random();
 
-        int res = connector.getResult("Test");
-        long t2 = System.nanoTime();
+        BufferedWriter bw = new BufferedWriter(new FileWriter("data.txt"));
 
-        System.out.println("From Server: " + res);
-        System.out.println("Time taken:  " + ((double)(t2 - t1)) / 1000000000 + " seconds");
-      //  System.out.println("My Check:    " + myCount);
+        for(int i = 0; i < BUF_SIZE; i++)
+        {
+            String state = states[r.nextInt(states.length)];
+            String age = Integer.toString(r.nextInt(100) + 1);
 
-        connector.shutdown();
+            String income = Integer.toString(r.nextInt(1000000) + 50000);
+            bw.write(state + "," + age + "," + income + "\n");
+        }
+
+        bw.flush();
+        bw.close();
     }
 }
